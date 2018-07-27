@@ -38,14 +38,14 @@
 ####################################
 # Hawkuler Metrics
 
-#- name: Grab Hawkuler Metrics Liveness output from Pod
-#  shell: "export KUBECONFIG=/etc/origin/master/admin.kubeconfig; oc login -u system:admin >/dev/null; oc project openshift-infra; oc rsh `oc get pod -n openshift-infra | grep hawkular-metrics | head -n 1 | awk {'print $1'}` /opt/hawkular/scripts/hawkular-metrics-liveness.py"
-#  register: output
-#- debug: var=output.stdout_lines
+- name: Grab Hawkuler Metrics Liveness output from Pod
+  shell: "export KUBECONFIG=/etc/origin/master/admin.kubeconfig; oc login -u system:admin >/dev/null; oc project openshift-infra; oc rsh `oc get pod -n openshift-infra | grep hawkular-metrics | head -n 1 | awk {'print $1'}` /opt/hawkular/scripts/hawkular-metrics-liveness.py"
+  register: output
+- debug: var=output.stdout_lines
 
-#- name: Fail if "The MetricsService is in the STARTED state and is available" is not in the liveness output
-#  fail:
-#  when: "'The MetricsService is in the STARTED state and is available' not in output.content"
+- name: Fail if "The MetricsService is in the STARTED state and is available" is not in the liveness output
+  fail:
+  when: "'The MetricsService is in the STARTED state and is available' not in output.content"
 
 
 ########################################
@@ -60,7 +60,4 @@
   register: output
 - debug: var=output.stdout_lines
 
-#- name: Fail if not enough space
-#  fail:
-#  when: "'The MetricsService is in the STARTED state and is available' not in output.content"
 
