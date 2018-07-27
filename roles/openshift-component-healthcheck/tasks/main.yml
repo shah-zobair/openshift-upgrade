@@ -1,0 +1,66 @@
+---
+# tasks file for roles/openshift-component-healthcheck
+
+#####################
+# Router
+
+- name: Check if all Router Pods are Running
+  shell: "export KUBECONFIG=/etc/origin/master/admin.kubeconfig; oc login -u system:admin >/dev/null; oc get pod -o wide -n default | grep router"
+  register: oc_output
+- debug: var=oc_output.stdout_lines
+
+- name: Check if any Router Pod is failing
+  shell: "export KUBECONFIG=/etc/origin/master/admin.kubeconfig; oc login -u system:admin >/dev/null; oc get pod -o wide -n default | grep router | grep -v 1/1 | wc -l"
+  register: oc_output
+- debug: var=oc_output.stdout_lines
+
+- name: Fail if any Router pod is not running
+  fail:
+  when: "'0' not in oc_output.stdout"
+
+- name: Grab Router URL
+  shell: "export KUBECONFIG=/etc/origin/master/admin.kubeconfig; oc login -u system:admin >/dev/null; oc get route -n default | grep router | awk '{printf $2}'"
+  register: routerurl
+- debug: var=routerurl.stdout_lines
+
+- name: Check Router Service health
+  uri:
+    url: "http://{{ routerurl.stdout }}/healthz"
+    return_content: yes
+  register: healthz
+- debug: var=healthz.content
+
+- name: Fail if "Service ready" is not in the API output
+  fail:
+  when: "'Service ready' not in healthz.content"
+
+
+####################################
+# Hawkuler Metrics
+
+#- name: Grab Hawkuler Metrics Liveness output from Pod
+#  shell: "export KUBECONFIG=/etc/origin/master/admin.kubeconfig; oc login -u system:admin >/dev/null; oc project openshift-infra; oc rsh `oc get pod -n openshift-infra | grep hawkular-metrics | head -n 1 | awk {'print $1'}` /opt/hawkular/scripts/hawkular-metrics-liveness.py"
+#  register: output
+#- debug: var=output.stdout_lines
+
+#- name: Fail if "The MetricsService is in the STARTED state and is available" is not in the liveness output
+#  fail:
+#  when: "'The MetricsService is in the STARTED state and is available' not in output.content"
+
+
+########################################
+# Logging
+
+
+########################################
+# Registry Disk Space
+
+- name: Grab Registry Pod Disk Space
+  shell: "export KUBECONFIG=/etc/origin/master/admin.kubeconfig; oc login -u system:admin >/dev/null; oc project default; oc rsh `oc get pod -n default | grep docker-registry | head -n 1 | awk {'print $1'}` df -h /registry"
+  register: output
+- debug: var=output.stdout_lines
+
+#- name: Fail if not enough space
+#  fail:
+#  when: "'The MetricsService is in the STARTED state and is available' not in output.content"
+

@@ -1,0 +1,7 @@
+[masters]
+master-0.openshift35.quicklab.pnq2.cee.redhat.com
+
+[nodes]
+master-0.openshift35.quicklab.pnq2.cee.redhat.com
+infra-0.openshift35.quicklab.pnq2.cee.redhat.com
+node-0.openshift35.quicklab.pnq2.cee.redhat.com

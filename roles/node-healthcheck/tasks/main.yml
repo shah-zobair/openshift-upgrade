@@ -1,0 +1,29 @@
+---
+# tasks file for roles/node-healthcheck
+
+
+##################
+# Disk Space (Future implementation - ansibel_mount fact variable)
+
+- name: Check /root and /var/log disk space
+  shell: "df -h /var/log; df -h /root"
+  register: output
+- debug: var=output.stdout_lines
+
+- name: Check Docker disk space
+  shell: "docker info |grep -i 'Data Space Available:'"
+  register: output
+- debug: var=output.stdout_lines
+
+
+###########################
+# Docker Package version
+
+
+- name: Check /root and /var/log disk space
+  #shell: "docker version |grep -i '^ Version'"
+  shell: "docker info | grep 'Server Version'"
+  register: output
+- debug: var=output.stdout_lines
+
+
