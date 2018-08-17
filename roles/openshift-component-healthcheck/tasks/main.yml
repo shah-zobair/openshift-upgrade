@@ -39,7 +39,7 @@
 # Hawkuler Metrics
 
 - name: Grab Hawkuler Metrics Liveness output from Pod
-  shell: "export KUBECONFIG=/etc/origin/master/admin.kubeconfig; oc login -u system:admin >/dev/null; oc project openshift-infra; oc rsh `oc get pod -n openshift-infra | grep hawkular-metrics | head -n 1 | awk {'print $1'}` /opt/hawkular/scripts/hawkular-metrics-liveness.py"
+  shell: "export KUBECONFIG=/etc/origin/master/admin.kubeconfig; oc login -u system:admin >/dev/null; oc project openshift-infra >/dev/null; oc rsh `oc get pod -n openshift-infra | grep hawkular-metrics | head -n 1 | awk {'print $1'}` /opt/hawkular/scripts/hawkular-metrics-liveness.py"
   register: output
 - debug: var=output.stdout_lines
 
