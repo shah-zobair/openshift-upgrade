@@ -25,9 +25,13 @@
   when: "output.stdout_lines < 2"
 
 - name: Check Docker disk space
-  shell: "docker info |grep -i 'Data Space Available:'"
+  shell: "docker info 2>/dev/null | grep -i 'Data Space Available:' | grep -v 'Meta' | grep GB | sed s/'Data Space Available: '//g | sed s/GB//g"
   register: output
 - debug: var=output.stdout_lines
+
+- name: Fail if it has less than 2G available space
+  fail:
+  when: "output.stdout_lines < 2"
 
 
 ###########################
