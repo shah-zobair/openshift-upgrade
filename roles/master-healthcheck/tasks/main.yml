@@ -56,3 +56,34 @@
   when: "'isLeader' not in health.stdout"
 
 
+##########################
+# Check openshift-master.kubeconfig has valid server URL on all masters
+
+- name: Check openshift-master.kubeconfig has valid server URL on all masters
+  shell: "grep server /etc/origin/master/openshift-master.kubeconfig | grep `hostname`"
+  register: output
+- debug: var=output.stdout_lines
+
+- name: Fail if /etc/origin/master/openshift-master.kubeconfig has LB as a URL instead of corresponding Master FQDN
+  fail:
+  when: "'server' not in output.stdout"
+
+
+###########################
+# Check controllerConfig has service-signer certs for Hawkuler Metrics
+
+- name: Check openshift-master.kubeconfig has valid server URL on all masters
+  shell: "grep -A4 controllerConfig /etc/origin/master/master-config.yaml"
+  register: output
+- debug: var=output.stdout_lines
+
+- name: Fail if service-signer certs are not defined
+  fail:
+  when: "'service-signer' not in output.stdout"
+
+
+############################
+#
+
+
+

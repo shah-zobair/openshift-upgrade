@@ -39,7 +39,6 @@
 
 
 - name: Check Docker version
-  #shell: "docker version |grep -i '^ Version'"
   shell: "docker info | grep 'Server Version'"
   register: output
 - debug: var=output.stdout_lines
@@ -47,5 +46,33 @@
 - name: Fail if docker version mismatch	
   fail:
   when: "'1.12.6' not in output.stdout"
+
+###########################
+# Check /etc/origin/node/resolv.conf exists on all nodes
+
+- name: Check /etc/origin/node/resolv.conf exists
+  shell: "grep nameserver /etc/origin/node/resolv.conf"
+  register: output
+- debug: var=output.stdout_lines
+
+- name: Fail if the file is missing or namserver is not in the file
+  fail:
+  when: "'nameserver' not in output.stdout"
+
+
+###########################
+# Check dnsIP variable exists in /etc/origin/node/node-config.yaml
+
+- name: Check dnsIP exists in /etc/origin/node/node-config.yaml
+  shell: "grep dnsIP /etc/origin/node/node-config.yaml"
+  register: output
+- debug: var=output.stdout_lines
+
+- name: Fail if dnsIP is missing
+  fail:
+  when: "'dnsIP:' not in output.stdout"
+
+###########################
+# Check
 
 

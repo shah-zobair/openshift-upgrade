@@ -23,16 +23,19 @@
   register: routerurl
 - debug: var=routerurl.stdout_lines
 
-- name: Check Router Service health
-  uri:
-    url: "http://{{ routerurl.stdout }}/healthz"
-    return_content: yes
-  register: healthz
-- debug: var=healthz.content
+- name: Check Router health if Router Statistics is enabled
+  block:
+    - name: Check Router Service health
+      uri:
+        url: "http://{{ routerurl.stdout }}/healthz"
+        return_content: yes
+      register: healthz
+    - debug: var=healthz.content
 
-- name: Fail if "Service ready" is not in the API output
-  fail:
-  when: "'Service ready' not in healthz.content"
+    - name: Fail if "Service ready" is not in the API output
+      fail:
+      when: "'Service ready' not in healthz.content"
+  when: "'' not in routerurl.stdout"
 
 
 ####################################
@@ -41,11 +44,15 @@
 - name: Grab Hawkuler Metrics Liveness output from Pod
   shell: "export KUBECONFIG=/etc/origin/master/admin.kubeconfig; oc login -u system:admin >/dev/null; oc project openshift-infra >/dev/null; oc rsh `oc get pod -n openshift-infra | grep hawkular-metrics | head -n 1 | awk {'print $1'}` /opt/hawkular/scripts/hawkular-metrics-liveness.py"
   register: output
+  ignore_errors: True
 - debug: var=output.stdout_lines
 
-- name: Fail if "The MetricsService is in the STARTED state and is available" is not in the liveness output
-  fail:
-  when: "'The MetricsService is in the STARTED state and is available' not in output.content"
+- name: Verify Metrics if running
+  block:
+    - name: Fail if hawkuler-metrics is not in ready state But skip if there are no Metrics components
+      fail:
+      when: "'The MetricsService is in the STARTED state and is available' not in output.stdout"
+  when: "'' not in output.stdout"
 
 
 ########################################
@@ -56,8 +63,10 @@
 # Registry Disk Space
 
 - name: Grab Registry Pod Disk Space
-  shell: "export KUBECONFIG=/etc/origin/master/admin.kubeconfig; oc login -u system:admin >/dev/null; oc project default; oc rsh `oc get pod -n default | grep docker-registry | head -n 1 | awk {'print $1'}` df -h /registry"
+  shell: "export KUBECONFIG=/etc/origin/master/admin.kubeconfig; oc login -u system:admin >/dev/null; oc project default >/dev/null; oc rsh `oc get pod -n default | grep docker-registry | head -n 1 | awk {'print $1'}` df -h /registry | grep registry | awk '{print $4}' | sed s/G//g"
   register: output
 - debug: var=output.stdout_lines
 
-
+- name: Fail if any Registry has insufficient disk space
+  fail:
+  when: "output.stdout_lines < 2"

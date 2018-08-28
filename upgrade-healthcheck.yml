@@ -13,3 +13,8 @@
   hosts: nodes
   roles:
      - node-healthcheck
+
+- name: Do ETCD data validation check
+  hosts: masters[0]
+  roles:
+     - etcd-data-healthcheck
