@@ -1,0 +1,17 @@
+---
+#- name: Post Configuration on Masters
+#  hosts: masters
+#  roles:
+#     - master-postconfig
+
+- name: Post Configuration on Nodes
+  hosts: nodes
+  gather_facts: true
+  roles:
+     - node-postconfig
+
+#- name: OpenShift component post configuration
+#  hosts: masters[0]
+#  roles:
+#     - openshift-component-postconfig
+
