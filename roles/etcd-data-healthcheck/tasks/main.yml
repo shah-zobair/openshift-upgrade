@@ -7,10 +7,7 @@
   register: oc_output
 - debug: var=oc_output.stdout_lines
 
-- name: Fail if any Router pod is not running
+- name: Fail if any error occurs
   fail:
   when: "'errors=0' not in oc_output.stdout"
 
-#- name: Fail if any Registry has insufficient disk space
-#  fail:
-#  when: "output.stdout_lines < 2"
