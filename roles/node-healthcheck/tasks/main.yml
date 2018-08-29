@@ -1,10 +1,20 @@
 ---
 # tasks file for roles/node-healthcheck
 
+##################
+# Check Subscription is valid or not
+- name: Check Subscription is valid or not
+  shell: subscription-manager repos | grep ID | grep rhel-7-server-ose-3.6-rpms
+  register: subsoutput
+- debug: var=subsoutput.stdout_lines
+
+- name: Fail if subscription is invalid
+  fail:
+  when: "'rhel-7-server-ose-3.6-rpms' not in subsoutput.stdout"
+
 
 ##################
 # Disk Space (Future implementation - ansibel_mount fact variable)
-
 - name: Check /root disk space
   shell: "df -h /root | awk {'print $4'} | grep -v Avail | grep G | sed s/G//g"
   register: output
