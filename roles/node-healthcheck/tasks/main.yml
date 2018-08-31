@@ -12,6 +12,15 @@
   fail:
   when: "'rhel-7-server-ose-3.6-rpms' not in subsoutput.stdout"
 
+# Check the node is subscribed to correct Satellite Content View
+- name: Check Subscription Content View
+  shell: subscription-manager identity | grep Library/OpenShift_01
+  register: subsoutput
+- debug: var=subsoutput.stdout_lines
+
+- name: Fail if Content View is not correct
+  fail:
+  when: "'Library/OpenShift_01' not in subsoutput.stdout"
 
 ##################
 # Disk Space (Future implementation - ansibel_mount fact variable)
@@ -41,7 +50,7 @@
 
 - name: Fail if it has less than 2G available space
   fail:
-  when: "output.stdout_lines < 2"
+  when: "output.stdout_lines < 5"
 
 
 ###########################
@@ -82,7 +91,5 @@
   fail:
   when: "'dnsIP:' not in output.stdout"
 
-###########################
-# Check
 
 

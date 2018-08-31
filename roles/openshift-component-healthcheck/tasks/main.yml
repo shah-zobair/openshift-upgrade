@@ -69,4 +69,4 @@
 
 - name: Fail if any Registry has insufficient disk space
   fail:
-  when: "output.stdout_lines < 2"
+  when: "output.stdout_lines < 100"

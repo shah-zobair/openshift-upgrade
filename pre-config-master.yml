@@ -17,15 +17,15 @@
 
 - hosts: masters[0]
   tasks:
-  - name: Check etcd backup directory does not exist
-    shell: "ls -ld /root/backup_upgrade36_master/member 2> /dev/null"
-    register: output
+#  - name: Check etcd backup directory does exist or not
+#    shell: "ls -ld /root/backup_upgrade36_master/member 2> /dev/null"
+#    register: output
 
   - name: Remove old etcd backup data if exist
     file:
       state: absent
       path: "/root/backup_upgrade36_master/member/"
-    when: "'/root/backup_upgrade36_master/member' in output.stdout"
+#    when: "'/root/backup_upgrade36_master/member' in output.stdout"
 
   - name: Backup etcd data under master backup directory
     shell: "etcdctl backup --data-dir=/var/lib/etcd --backup-dir=/root/backup_upgrade36_master"
