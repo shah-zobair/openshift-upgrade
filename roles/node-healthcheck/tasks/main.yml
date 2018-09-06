@@ -72,11 +72,12 @@
 - name: Check /etc/origin/node/resolv.conf exists
   shell: "grep nameserver /etc/origin/node/resolv.conf"
   register: output
+  ignore_errors: True
 - debug: var=output.stdout_lines
 
-- name: Fail if the file is missing or namserver is not in the file
-  fail:
-  when: "'nameserver' not in output.stdout"
+#- name: Fail if the file is missing or namserver is not in the file
+#  fail:
+#  when: "'nameserver' not in output.stdout"
 
 
 ###########################
