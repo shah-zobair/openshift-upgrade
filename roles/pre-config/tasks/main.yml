@@ -52,12 +52,12 @@
 - name: Update OpenShift packages
   yum:
     name: "{{ packages }}"
+    state: latest
   vars:
     packages:
     - atomic-openshift-utils
     - atomic-openshift-excluder
     - atomic-openshift-docker-excluder
-  state: latest
 
 - name: Backup Config files
   block:
