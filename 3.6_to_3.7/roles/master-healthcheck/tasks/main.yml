@@ -72,14 +72,22 @@
 ###########################
 # Check controllerConfig has service-signer certs for Hawkuler Metrics
 
-- name: Check openshift-master.kubeconfig has valid server URL on all masters
-  shell: "grep -A4 controllerConfig /etc/origin/master/master-config.yaml"
-  register: output
-- debug: var=output.stdout_lines
+- name: Check openshift version
+  shell: "oc version | grep openshift"
+  register: ocoutput
+- debug: var=ocoutput.stdout_lines
 
-- name: Fail if service-signer certs are not defined
-  fail:
-  when: "'service-signer' not in output.stdout"
+- name: Check controllerConfig has service-signer certs for Hawkuler Metrics
+  block:
+    - name: Check controllerConfig
+      shell: "grep -A4 controllerConfig /etc/origin/master/master-config.yaml"
+      register: output
+    - debug: var=output.stdout_lines
+
+    - name: Fail if service-signer certs are not defined
+      fail:
+      when: "'service-signer' not in output.stdout"
+  when: "'v3.6' in ocoutput.stdout"
 
 
 ############################
