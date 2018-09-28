@@ -4,6 +4,7 @@
   roles:
      - pre-config
 
+# Backup /etc/origin/master directory
 - hosts: masters
   tasks:
   - name: Create master backup directory
@@ -15,20 +16,17 @@
   - name: Backup /etc/origin/master
     shell: "cp -rp /etc/origin/master/. /root/backup_upgrade37_master/"
 
+# Take etcd snapshot from master-01
 - hosts: masters[0]
   tasks:
-#  - name: Check etcd backup directory does exist or not
-#    shell: "ls -ld /root/backup_upgrade36_master/member 2> /dev/null"
-#    register: output
 
   - name: Remove old etcd backup data if exist
     file:
       state: absent
-      path: "/root/backup_upgrade37_master/etcd"
-#    when: "'/root/backup_upgrade36_master/member' in output.stdout"
+      path: "/root/backup_upgrade37_master/etcd_snapshot"
 
   - name: Backup etcd data under master backup directory
-    shell: "etcdctl --endpoints `grep ETCD_LISTEN_CLIENT_URLS /etc/etcd/etcd.conf | sed s/'ETCD_LISTEN_CLIENT_URLS='//g` --cacert="/etc/origin/master/master.etcd-ca.crt" --cert="/etc/origin/master/master.etcd-client.crt" --key="/etc/origin/master/master.etcd-client.key" snapshot save /root/backup_upgrade37_master/etcd"
+    shell: 'etcdctl --endpoints $(grep ETCD_LISTEN_CLIENT_URLS /etc/etcd/etcd.conf | sed s/"ETCD_LISTEN_CLIENT_URLS="//g) --cacert="/etc/origin/master/master.etcd-ca.crt" --cert="/etc/origin/master/master.etcd-client.crt" --key="/etc/origin/master/master.etcd-client.key" snapshot save /root/backup_upgrade37_master/etcd_snapshot'
     environment:
       ETCDCTL_API: 3
 
