@@ -9,11 +9,11 @@
   - name: Create master backup directory
     ignore_errors: True
     file:
-      path: /root/backup_upgrade36_master
+      path: /root/backup_upgrade37_master
       state: directory
       mode: 0755
   - name: Backup /etc/origin/master
-    shell: "cp -rp /etc/origin/master/. /root/backup_upgrade36_master/"
+    shell: "cp -rp /etc/origin/master/. /root/backup_upgrade37_master/"
 
 - hosts: masters[0]
   tasks:
@@ -24,9 +24,9 @@
   - name: Remove old etcd backup data if exist
     file:
       state: absent
-      path: "/root/backup_upgrade36_master/member/"
+      path: "/root/backup_upgrade37_master/member/"
 #    when: "'/root/backup_upgrade36_master/member' in output.stdout"
 
   - name: Backup etcd data under master backup directory
-    shell: "etcdctl backup --data-dir=/var/lib/etcd --backup-dir=/root/backup_upgrade36_master"
+    shell: "etcdctl3 snapshot save /root/backup_upgrade37_master"
 

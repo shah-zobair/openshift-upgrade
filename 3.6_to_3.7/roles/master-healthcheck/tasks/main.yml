@@ -83,7 +83,27 @@
 
 
 ############################
-#
+# Check openshift-master.kubeconfig is valid for each master nodes
 
+- name: Check openshift-master.kubeconfig is valid 
+  shell: "oc whoami --config=/etc/origin/master/openshift-master.kubeconfig --server `grep server /etc/origin/master/openshift-master.kubeconfig | grep -o https://*.*$`"
+  register: output
+- debug: var=output.stdout_lines
+
+- name: Fail if it can not authenticate
+  fail:
+  when: "'system:openshift-master' not in output.stdout"
+
+#############################
+# Check openshift-master.kubeconfig is valid for each master nodes
+
+- name: Check openshift-master.kubeconfig is valid
+  shell: "oc whoami --config=/etc/origin/master/admin.kubeconfig --server `grep server /etc/origin/master/admin.kubeconfig | grep -o https://*.*$`"
+  register: output
+- debug: var=output.stdout_lines
+
+#- name: Fail if it can not authenticate
+#  fail:
+#  when: "'system:openshift-master' not in output.stdout"
 
 

@@ -12,7 +12,7 @@
 
 # Switch Repository
 
-- name: Switch Repo from 3.5 to 3.6
+- name: Switch Repo from 3.6 to 3.7
   block:
 #### FOR ANSIBLE 2.6 ####
 #    - name: Disable rhel-7-server-ose-3.5-rpms
@@ -30,8 +30,8 @@
 #        - rhel-7-fast-datapath-rpms
 #### #### #### #### ####
 
-    - name: Disable rhel-7-server-ose-3.5-rpms and Enable required repositories for 3.6
-      shell: "subscription-manager repos --disable=rhel-7-server-ose-3.5-rpms --enable=rhel-7-server-ose-3.6-rpms --enable=rhel-7-server-extras-rpms --enable=rhel-7-fast-datapath-rpms"
+    - name: Disable rhel-7-server-ose-3.6-rpms and Enable required repositories for 3.7
+      shell: "subscription-manager repos --disable=rhel-7-server-ose-3.6-rpms --enable=rhel-7-server-ose-3.7-rpms --enable=rhel-7-server-extras-rpms --enable=rhel-7-fast-datapath-rpms --enable=rhel-7-server-rpms"
 
     - name: Clear Yum Cache
       shell: "yum clean all"
@@ -41,13 +41,13 @@
   shell: "atomic-openshift-excluder unexclude"
 
 - name: Verify it can get OpenShift packages
-  shell: "repoquery --plugins --quiet atomic-openshift-3.6*"
+  shell: "repoquery --plugins --quiet atomic-openshift-3.7*"
   register: output
 - debug: var=output.stdout_lines
 
 - name: Fail if required package version is not found
   fail:
-  when: "'3.6' not in output.stdout"
+  when: "'3.7' not in output.stdout"
 
 - name: Update OpenShift packages
   yum:
@@ -64,25 +64,25 @@
     - name: Create backup directory
       ignore_errors: True
       file:
-        path: /root/backup_upgrade36
+        path: /root/backup_upgrade37
         state: directory
         mode: 0755
 
     - name: Backup /etc/sysconfig/docker
-      shell: "cp -p /etc/sysconfig/docker /root/backup_upgrade36/"
+      shell: "cp -p /etc/sysconfig/docker /root/backup_upgrade37/"
 
     - name: Backup /etc/sysconfig/docker-network
-      shell: "cp -p /etc/sysconfig/docker-network /root/backup_upgrade36/"
+      shell: "cp -p /etc/sysconfig/docker-network /root/backup_upgrade37/"
 
     - name: Backup /etc/sysconfig/docker-storage
-      shell: "cp -p /etc/sysconfig/docker-storage /root/backup_upgrade36/"
+      shell: "cp -p /etc/sysconfig/docker-storage /root/backup_upgrade37/"
 
     - name: Backup /etc/sysconfig/docker-storage-setup
-      shell: "cp -p /etc/sysconfig/docker-storage-setup /root/backup_upgrade36/"
+      shell: "cp -p /etc/sysconfig/docker-storage-setup /root/backup_upgrade37/"
 
     - name: Backup /etc/origin/node
-      shell: "cp -rp /etc/origin/node/. /root/backup_upgrade36/"
+      shell: "cp -rp /etc/origin/node/. /root/backup_upgrade37/"
 
     - name: Backup /etc/sysconfig/iptables
-      shell: "cp -p /etc/sysconfig/iptables /root/backup_upgrade36/"
+      shell: "cp -p /etc/sysconfig/iptables /root/backup_upgrade37/"
 
