@@ -1,0 +1,88 @@
+---
+# tasks file for roles/pre-config
+
+
+# Ensure NetworkManager service is running
+- name: Ensure NetworkManager service is running
+  service:
+    name: NetworkManager
+    state: started
+    enabled: yes
+
+
+# Switch Repository
+
+- name: Switch Repo from 3.5 to 3.6
+  block:
+#### FOR ANSIBLE 2.6 ####
+#    - name: Disable rhel-7-server-ose-3.5-rpms
+#      rhsm_repository:
+#        name: 'rhel-7-server-ose-3.5-rpms'
+#        state: disabled
+
+#    - name: Make sure all required repositories with OpenShift 3.6 is enabled
+#      rhsm_repository:
+#        name: "{{ item }}"
+#        state: enabled
+#      with_items:
+#        - rhel-7-server-ose-3.6-rpms
+#        - rhel-7-server-extras-rpms
+#        - rhel-7-fast-datapath-rpms
+#### #### #### #### ####
+
+    - name: Disable rhel-7-server-ose-3.5-rpms and Enable required repositories for 3.6
+      shell: "subscription-manager repos --disable=rhel-7-server-ose-3.5-rpms --enable=rhel-7-server-ose-3.6-rpms --enable=rhel-7-server-extras-rpms --enable=rhel-7-fast-datapath-rpms"
+
+    - name: Clear Yum Cache
+      shell: "yum clean all"
+
+
+- name: Run atomic-openshift-excluder unexclude
+  shell: "atomic-openshift-excluder unexclude"
+
+- name: Verify it can get OpenShift packages
+  shell: "repoquery --plugins --quiet atomic-openshift-3.6*"
+  register: output
+- debug: var=output.stdout_lines
+
+- name: Fail if required package version is not found
+  fail:
+  when: "'3.6' not in output.stdout"
+
+- name: Update OpenShift packages
+  yum:
+    name: "{{ packages }}"
+    state: latest
+  vars:
+    packages:
+    - atomic-openshift-utils
+    - atomic-openshift-excluder
+    - atomic-openshift-docker-excluder
+
+- name: Backup Config files
+  block:
+    - name: Create backup directory
+      ignore_errors: True
+      file:
+        path: /root/backup_upgrade36
+        state: directory
+        mode: 0755
+
+    - name: Backup /etc/sysconfig/docker
+      shell: "cp -p /etc/sysconfig/docker /root/backup_upgrade36/"
+
+    - name: Backup /etc/sysconfig/docker-network
+      shell: "cp -p /etc/sysconfig/docker-network /root/backup_upgrade36/"
+
+    - name: Backup /etc/sysconfig/docker-storage
+      shell: "cp -p /etc/sysconfig/docker-storage /root/backup_upgrade36/"
+
+    - name: Backup /etc/sysconfig/docker-storage-setup
+      shell: "cp -p /etc/sysconfig/docker-storage-setup /root/backup_upgrade36/"
+
+    - name: Backup /etc/origin/node
+      shell: "cp -rp /etc/origin/node/. /root/backup_upgrade36/"
+
+    - name: Backup /etc/sysconfig/iptables
+      shell: "cp -p /etc/sysconfig/iptables /root/backup_upgrade36/"
+

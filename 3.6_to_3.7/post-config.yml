@@ -1,0 +1,12 @@
+---
+#- name: Post Configuration on Masters (If required)
+#  hosts: masters
+#  roles:
+#     - master-postconfig
+
+- name: Post Configuration on Nodes
+  hosts: nodes
+  gather_facts: true
+  roles:
+     - node-postconfig
+

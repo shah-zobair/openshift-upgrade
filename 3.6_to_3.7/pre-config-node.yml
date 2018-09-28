@@ -1,0 +1,5 @@
+---
+- name: Pre Configuration on Nodes
+  hosts: nodes:!masters
+  roles:
+     - pre-config

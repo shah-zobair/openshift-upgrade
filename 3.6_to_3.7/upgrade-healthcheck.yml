@@ -1,0 +1,20 @@
+---
+- name: Do Master Node Health check 
+  hosts: masters
+  roles:
+     - master-healthcheck
+
+- name: Do OpenShift component Health Check
+  hosts: masters[0]
+  roles:
+     - openshift-component-healthcheck
+
+- name: Do All Node Health check
+  hosts: nodes
+  roles:
+     - node-healthcheck
+
+- name: Do ETCD data validation check
+  hosts: masters[0]
+  roles:
+     - etcd-data-healthcheck
