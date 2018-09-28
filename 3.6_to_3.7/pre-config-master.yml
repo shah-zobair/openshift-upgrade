@@ -24,9 +24,11 @@
   - name: Remove old etcd backup data if exist
     file:
       state: absent
-      path: "/root/backup_upgrade37_master/member/"
+      path: "/root/backup_upgrade37_master/etcd"
 #    when: "'/root/backup_upgrade36_master/member' in output.stdout"
 
   - name: Backup etcd data under master backup directory
-    shell: "etcdctl3 snapshot save /root/backup_upgrade37_master"
+    shell: "etcdctl --endpoints `grep ETCD_LISTEN_CLIENT_URLS /etc/etcd/etcd.conf | sed s/'ETCD_LISTEN_CLIENT_URLS='//g` --cacert="/etc/origin/master/master.etcd-ca.crt" --cert="/etc/origin/master/master.etcd-client.crt" --key="/etc/origin/master/master.etcd-client.key" snapshot save /root/backup_upgrade37_master/etcd"
+    environment:
+      ETCDCTL_API: 3
 
