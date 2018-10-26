@@ -1,0 +1,46 @@
+---
+# tasks file for roles/node-postconfig
+
+
+# Restart NetworkManager service
+- name: Restart NetworkManager service
+  service:
+    name: NetworkManager
+    state: restarted
+    enabled: yes
+
+
+# Check nameserver is valid in /etc/resolv.conf
+- debug: var=ansible_default_ipv4.address
+
+- name: Get current nameserver IP
+  shell: "grep ^nameserver /etc/resolv.conf |tail -n1 | sed s/'nameserver '//g"
+  register: dns
+- debug: var=dns.stdout_lines
+
+- name: Fail if nameserver and node IP does not match
+  fail:
+  when: "ansible_default_ipv4.address != dns.stdout"
+
+
+# Correct dnsIP in /etc/origin/node/node-config.yaml if required
+- name: Get dnsIP from /etc/origin/node/node-config.yaml
+  shell: "grep ^dnsIP /etc/origin/node/node-config.yaml | awk '{print $2}'"
+  register: dnsip
+- debug: var=dnsip.stdout_lines
+
+- name: Correct dnsIP if required
+  block:
+    - name: Correct dnsIP
+      lineinfile:
+        path: /etc/origin/node/node-config.yaml
+        regexp: '^dnsIP:.*$'
+        line: 'dnsIP: {{ dns.stdout }}'
+
+    - name: Restart Node Service
+      service:
+        name: atomic-openshift-node
+        state: restarted
+  when: "dnsip.stdout != dns.stdout"
+
+
