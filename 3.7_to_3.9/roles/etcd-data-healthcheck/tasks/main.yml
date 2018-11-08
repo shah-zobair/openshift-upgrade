@@ -3,7 +3,7 @@
 
 
 - name: Dump all etcd data (Dry Run)
-  shell: "export KUBECONFIG=/etc/origin/master/admin.kubeconfig; oc login -u system:admin >/dev/null; oc adm migrate storage --include=* --loglevel=2"
+  shell: "export KUBECONFIG=/etc/origin/master/admin.kubeconfig; oc login -u system:admin >/dev/null; oc adm migrate storage --include=*"
   register: oc_output
 - debug: var=oc_output.stdout_lines
 
