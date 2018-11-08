@@ -4,13 +4,13 @@
 ##################
 # Check Subscription is valid or not
 - name: Check Subscription is valid or not
-  shell: subscription-manager repos | grep ID | grep rhel-7-server-ose-3.6-rpms
+  shell: subscription-manager repos | grep ID | grep rhel-7-server-ose-3.7-rpms
   register: subsoutput
 - debug: var=subsoutput.stdout_lines
 
 - name: Fail if subscription is invalid
   fail:
-  when: "'rhel-7-server-ose-3.6-rpms' not in subsoutput.stdout"
+  when: "'rhel-7-server-ose-3.7-rpms' not in subsoutput.stdout"
 
 # Check the node is subscribed to correct Satellite Content View
 - name: Check Subscription Content View
