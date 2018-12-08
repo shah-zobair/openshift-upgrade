@@ -73,7 +73,7 @@
 # Check controllerConfig has service-signer certs for Hawkuler Metrics
 
 - name: Check openshift version
-  shell: "oc version | grep openshift"
+  shell: "export KUBECONFIG=/etc/origin/master/admin.kubeconfig; oc login -u system:admin >/dev/null; oc version | grep openshift"
   register: ocoutput
 - debug: var=ocoutput.stdout_lines
 
@@ -94,7 +94,7 @@
 # Check openshift-master.kubeconfig is valid for each master nodes
 
 - name: Check openshift-master.kubeconfig is valid 
-  shell: "oc whoami --config=/etc/origin/master/openshift-master.kubeconfig --server `grep server /etc/origin/master/openshift-master.kubeconfig | grep -o https://*.*$`"
+  shell: "export KUBECONFIG=/etc/origin/master/admin.kubeconfig; oc login -u system:admin >/dev/null; oc whoami --config=/etc/origin/master/openshift-master.kubeconfig --server `grep server /etc/origin/master/openshift-master.kubeconfig | grep -o https://*.*$`"
   register: output
 - debug: var=output.stdout_lines
 
@@ -106,7 +106,7 @@
 # Check admin.kubeconfig is valid for each master nodes
 
 - name: Check admin.kubeconfig is valid
-  shell: "oc whoami --config=/etc/origin/master/admin.kubeconfig --server `grep server /etc/origin/master/admin.kubeconfig | grep -o https://*.*$`"
+  shell: "export KUBECONFIG=/etc/origin/master/admin.kubeconfig; oc login -u system:admin >/dev/null; oc whoami --config=/etc/origin/master/admin.kubeconfig --server `grep server /etc/origin/master/admin.kubeconfig | grep -o https://*.*$`"
   register: output
 - debug: var=output.stdout_lines
 
