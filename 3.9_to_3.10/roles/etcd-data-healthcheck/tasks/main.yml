@@ -1,0 +1,13 @@
+---
+# tasks file for roles/etcd-data-healthcheck
+
+
+- name: Dump all etcd data (Dry Run)
+  shell: "export KUBECONFIG=/etc/origin/master/admin.kubeconfig; oc login -u system:admin >/dev/null; oc adm migrate storage --include=* --confirm"
+  register: oc_output
+- debug: var=oc_output.stdout_lines
+
+- name: Fail if any error occurs
+  fail:
+  when: "'errors=0' not in oc_output.stdout"
+
