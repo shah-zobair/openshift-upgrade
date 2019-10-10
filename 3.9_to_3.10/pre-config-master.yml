@@ -26,10 +26,10 @@
       mode: 0755
 
   - name: Backup /usr/lib/systemd/system/atomic*
-    shell: "cp -p /usr/lib/systemd/system/atomic* /root/backup_upgrade3_10/"
+    shell: "cp -rp /usr/lib/systemd/system/atomic* /root/backup_upgrade3_10/"
 
   - name: Backup /etc/sysconfig/atomic*
-    shell: "cp -p /etc/sysconfig/atomic* /root/backup_upgrade3_10/"
+    shell: "cp -rp /etc/sysconfig/atomic* /root/backup_upgrade3_10/"
 
   - name: Backup /etc/etcd*
     shell: "cp -rp /etc/etcd /root/backup_upgrade3_10/"

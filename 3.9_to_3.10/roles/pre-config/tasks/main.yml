@@ -85,7 +85,7 @@
       shell: "cp -p /etc/sysconfig/iptables /root/backup_upgrade3_10/"
 
     - name: Backup /usr/lib/systemd/system/atomic*
-      shell: "cp -p /usr/lib/systemd/system/atomic* /root/backup_upgrade3_10/"
+      shell: "cp -pr /usr/lib/systemd/system/atomic* /root/backup_upgrade3_10/"
 
 
 
