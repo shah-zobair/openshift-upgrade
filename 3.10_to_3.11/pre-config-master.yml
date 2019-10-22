@@ -25,9 +25,6 @@
       state: directory
       mode: 0755
 
-  - name: Backup /usr/lib/systemd/system/atomic*
-    shell: "cp -rp /usr/lib/systemd/system/atomic* /root/backup_upgrade3_11/"
-
   - name: Backup /etc/sysconfig/atomic*
     shell: "cp -rp /etc/sysconfig/atomic* /root/backup_upgrade3_11/"
 
