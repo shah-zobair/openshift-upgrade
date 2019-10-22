@@ -1,0 +1,7 @@
+---
+
+- name: Do All Node Health check
+  hosts: nodes:!masters
+  roles:
+     - node-healthcheck
+

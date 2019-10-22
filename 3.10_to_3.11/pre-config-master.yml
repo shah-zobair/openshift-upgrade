@@ -10,32 +10,32 @@
   - name: Create master backup directory
     ignore_errors: True
     file:
-      path: /root/backup_upgrade3_10_master
+      path: /root/backup_upgrade3_11_master
       state: directory
       mode: 0755
   - name: Backup /etc/origin/master
-    shell: "cp -rp /etc/origin/master/. /root/backup_upgrade3_10_master/"
+    shell: "cp -rp /etc/origin/master/. /root/backup_upgrade3_11_master/"
 
 - hosts: masters
   tasks:
   - name: Create backup directory
     ignore_errors: True
     file:
-      path: /root/backup_upgrade3_10
+      path: /root/backup_upgrade3_11
       state: directory
       mode: 0755
 
   - name: Backup /usr/lib/systemd/system/atomic*
-    shell: "cp -rp /usr/lib/systemd/system/atomic* /root/backup_upgrade3_10/"
+    shell: "cp -rp /usr/lib/systemd/system/atomic* /root/backup_upgrade3_11/"
 
   - name: Backup /etc/sysconfig/atomic*
-    shell: "cp -rp /etc/sysconfig/atomic* /root/backup_upgrade3_10/"
+    shell: "cp -rp /etc/sysconfig/atomic* /root/backup_upgrade3_11/"
 
   - name: Backup /etc/etcd*
-    shell: "cp -rp /etc/etcd /root/backup_upgrade3_10/"
+    shell: "cp -rp /etc/etcd /root/backup_upgrade3_11/"
 
   - name: Backup /etc/origin/node/node-config.yaml
-    shell: "cp -p /etc/origin/node/node-config.yaml /root/backup_upgrade3_10/"
+    shell: "cp -p /etc/origin/node/node-config.yaml /root/backup_upgrade3_11/"
 
 # Take etcd snapshot from master-01
 - hosts: masters[0]
@@ -44,7 +44,7 @@
   - name: Remove old etcd backup data if exist
     file:
       state: absent
-      path: "/root/backup_upgrade3_10_master/etcd_snapshot"
+      path: "/root/backup_upgrade3_11_master/etcd_snapshot"
 
   - name: Backup etcd data under master backup directory
     shell: 'etcdctl --endpoints $(grep ETCD_LISTEN_CLIENT_URLS /etc/etcd/etcd.conf | sed s/"ETCD_LISTEN_CLIENT_URLS="//g) --cacert="/etc/origin/master/master.etcd-ca.crt" --cert="/etc/origin/master/master.etcd-client.crt" --key="/etc/origin/master/master.etcd-client.key" snapshot save /root/backup_upgrade3_10_master/etcd_snapshot'

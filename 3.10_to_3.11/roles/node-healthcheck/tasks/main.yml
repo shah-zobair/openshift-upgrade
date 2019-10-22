@@ -1,0 +1,96 @@
+---
+# tasks file for roles/node-healthcheck
+
+##################
+# Check Subscription is valid or not
+- name: Check Subscription is valid or not
+  shell: subscription-manager repos | grep ID | grep rhel-7-server-ose-3.10-rpms
+  register: subsoutput
+- debug: var=subsoutput.stdout_lines
+
+- name: Fail if subscription is invalid
+  fail:
+  when: "'rhel-7-server-ose-3.10-rpms' not in subsoutput.stdout"
+
+# Check the node is subscribed to correct Satellite Content View
+- name: Check Subscription Content View
+  shell: subscription-manager identity | grep Library/OpenShift
+  register: subsoutput
+- debug: var=subsoutput.stdout_lines
+
+- name: Fail if Content View is not correct
+  fail:
+  when: "'Library/OpenShift' not in subsoutput.stdout"
+
+##################
+# Disk Space (Future implementation - ansibel_mount fact variable)
+- name: Check /root disk space
+  shell: "df -h /root | awk {'print $4'} | grep -v Avail | grep G | sed s/G//g"
+  register: output
+- debug: var=output.stdout_lines
+
+- name: Fail if it has less than 2G available space
+  fail:
+  when: "output.stdout_lines < 2"
+
+
+- name: Check /var/log disk space
+  shell: "df -h /var/log | awk {'print $4'} | grep -v Avail | grep G | sed s/G//g"
+  register: output
+- debug: var=output.stdout_lines
+
+- name: Fail if it has less than 2G available space
+  fail:
+  when: "output.stdout_lines < 2"
+
+- name: Check Docker disk space
+  shell: "docker info 2>/dev/null | grep -i 'Data Space Available:' | grep -v 'Meta' | grep GB | sed s/'Data Space Available: '//g | sed s/GB//g"
+  register: output
+- debug: var=output.stdout_lines
+
+- name: Fail if it has less than 2G available space
+  fail:
+  when: "output.stdout_lines < 5"
+
+
+###########################
+# Docker Package version
+
+
+- name: Check Docker version
+  shell: "docker info | grep 'Server Version'"
+  register: output
+- debug: var=output.stdout_lines
+
+- name: Fail if docker version is not 1.13.1	
+  fail:
+  when: "'1.13.1' not in output.stdout"
+
+###########################
+# Check /etc/origin/node/resolv.conf exists on all nodes
+
+- name: Check /etc/origin/node/resolv.conf exists
+  shell: "grep nameserver /etc/origin/node/resolv.conf"
+  register: output
+  ignore_errors: True
+- debug: var=output.stdout_lines
+
+- name: Fail if the file is missing or namserver is not in the file
+  fail:
+  when: "'nameserver' not in output.stdout"
+
+
+###########################
+# Check dnsIP variable exists in /etc/origin/node/node-config.yaml
+
+- name: Check dnsIP exists in /etc/origin/node/node-config.yaml
+  shell: "grep dnsIP /etc/origin/node/node-config.yaml"
+  register: output
+- debug: var=output.stdout_lines
+
+- name: Fail if dnsIP is missing
+  fail:
+  when: "'dnsIP:' not in output.stdout"
+
+
+

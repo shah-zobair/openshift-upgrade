@@ -1,0 +1,117 @@
+---
+# tasks file for roles/master-healthcheck
+
+#########################
+# Test Master cluster health
+
+- name: Grab Master Public URL
+  shell: "grep ^masterPublicURL: /etc/origin/master/master-config.yaml | cut -f2 -d ' '"
+  register: masterurl
+- debug: var=masterurl.stdout_lines
+
+- name: Check Master API/Controllers health
+  uri:
+    url: "{{ masterurl.stdout }}/healthz"
+    return_content: yes
+  register: healthz
+- debug: var=healthz.content
+
+- name: Fail if "OK" is not in the API output
+  fail:
+  when: "'ok' not in healthz.content"
+
+##########################
+# Test ETCD cluster health
+
+- name: Grab ETCD local API
+  shell: "grep ETCD_ADVERTISE_CLIENT_URLS= /etc/etcd/etcd.conf | cut -f2 -d="
+  register: etcdapi
+- debug: var=etcdapi.stdout_lines
+
+- name: Check ETCD Cluster health
+  shell: etcdctl --endpoints {{ etcdapi.stdout }} --ca-file=/etc/origin/master/master.etcd-ca.crt --cert-file=/etc/origin/master/master.etcd-client.crt --key-file=/etc/origin/master/master.etcd-client.key cluster-health
+  register: health
+- debug: var=health.stdout_lines
+
+- name: Fail if "cluster is healthy" is not in the cluster-health output
+  fail:
+  when: "'cluster is healthy' not in health.stdout"
+
+
+##########################
+# Check ETCD member list
+
+- name: Grab ETCD local API
+  shell: "grep ETCD_ADVERTISE_CLIENT_URLS= /etc/etcd/etcd.conf | cut -f2 -d="
+  register: etcdapi
+- debug: var=etcdapi.stdout_lines
+
+- name: Check ETCD Cluster health
+  shell: etcdctl --endpoints {{ etcdapi.stdout }} --ca-file=/etc/origin/master/master.etcd-ca.crt --cert-file=/etc/origin/master/master.etcd-client.crt --key-file=/etc/origin/master/master.etcd-client.key member list
+  register: health
+- debug: var=health.stdout_lines
+
+- name: Fail if "cluster is healthy" is not in the cluster-health output
+  fail:
+  when: "'isLeader' not in health.stdout"
+
+
+##########################
+# Check openshift-master.kubeconfig has valid server URL on all masters
+
+- name: Check openshift-master.kubeconfig has valid server URL on all masters
+  shell: "grep server /etc/origin/master/openshift-master.kubeconfig | grep `hostname`"
+  register: output
+- debug: var=output.stdout_lines
+
+- name: Fail if /etc/origin/master/openshift-master.kubeconfig has LB as a URL instead of corresponding Master FQDN
+  fail:
+  when: "'server' not in output.stdout"
+
+
+###########################
+# Check controllerConfig has service-signer certs for Hawkuler Metrics
+
+- name: Check openshift version
+  shell: "oc version | grep openshift"
+  register: ocoutput
+- debug: var=ocoutput.stdout_lines
+
+- name: Check controllerConfig has service-signer certs for Hawkuler Metrics
+  block:
+    - name: Check controllerConfig
+      shell: "grep -A4 controllerConfig /etc/origin/master/master-config.yaml"
+      register: output
+    - debug: var=output.stdout_lines
+
+    - name: Fail if service-signer certs are not defined
+      fail:
+      when: "'service-signer' not in output.stdout"
+  when: "'v3.6' in ocoutput.stdout"
+
+
+############################
+# Check openshift-master.kubeconfig is valid for each master nodes
+
+- name: Check openshift-master.kubeconfig is valid 
+  shell: "oc whoami --config=/etc/origin/master/openshift-master.kubeconfig --server `grep server /etc/origin/master/openshift-master.kubeconfig | grep -o https://*.*$`"
+  register: output
+- debug: var=output.stdout_lines
+
+- name: Fail if it can not authenticate
+  fail:
+  when: "'system:openshift-master' not in output.stdout"
+
+#############################
+# Check admin.kubeconfig is valid for each master nodes
+
+- name: Check admin.kubeconfig is valid
+  shell: "oc whoami --config=/etc/origin/master/admin.kubeconfig --server `grep server /etc/origin/master/admin.kubeconfig | grep -o https://*.*$`"
+  register: output
+- debug: var=output.stdout_lines
+
+#- name: Fail if it can not authenticate
+#  fail:
+#  when: "'system:openshift-master' not in output.stdout"
+
+
