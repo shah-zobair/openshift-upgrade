@@ -84,7 +84,4 @@
     - name: Backup /etc/sysconfig/iptables
       shell: "cp -p /etc/sysconfig/iptables /root/backup_upgrade3_11/"
 
-    - name: Backup /usr/lib/systemd/system/atomic*
-      shell: "cp -pr /usr/lib/systemd/system/atomic* /root/backup_upgrade3_11/"
-
 
